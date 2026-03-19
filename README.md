@@ -43,6 +43,7 @@ gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
 ```
 
 ### 必要環境變數
+- `PYTHON_VERSION=3.10.13`
 - `AGE_KIOSK_CLOUD_MODE=1`
 - `AGE_KIOSK_QUIET_HTTP_LOGS=1`
 - `AGE_KIOSK_CLOUD_MAX_IMAGE_MB=5`
