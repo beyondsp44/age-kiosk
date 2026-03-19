@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 ### Start Command
 ```bash
-gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
+gunicorn wsgi:app --workers 1 --threads 4 --timeout 600
 ```
 
 ### 必要環境變數
@@ -48,6 +48,7 @@ gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
 - `AGE_KIOSK_QUIET_HTTP_LOGS=1`
 - `AGE_KIOSK_CLOUD_MAX_IMAGE_MB=5`
 - `AGE_KIOSK_CLOUD_INFER_INTERVAL_MS=1200`
+- `AGE_KIOSK_CLOUD_MODEL_NAME=buffalo_s`
 
 可直接使用 repo 內的 `render.yaml` 當設定基準，避免手動漏填。
 
@@ -82,3 +83,4 @@ gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
 - 雲端模式要用 HTTPS 網域，瀏覽器才會穩定允許攝影機權限。
 - 此分支不內建 `.venv`；請在部署端安裝依賴。
 - Deploy 分支使用 `opencv-python-headless`，避免雲端環境缺少 GUI 動態函式庫。
+- 首次推論可能需要下載與初始化模型，若遇到暫時連線錯誤，通常重試即可。

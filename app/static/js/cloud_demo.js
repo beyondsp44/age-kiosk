@@ -22,6 +22,7 @@
   let stream = null;
   let timer = null;
   let inFlight = false;
+  let inferRetryTimer = null;
 
   const setText = (node, value) => {
     if (!node) return;
@@ -48,6 +49,10 @@
 
   const stopCamera = () => {
     stopLoop();
+    if (inferRetryTimer) {
+      window.clearTimeout(inferRetryTimer);
+      inferRetryTimer = null;
+    }
     if (stream) {
       for (const track of stream.getTracks()) {
         track.stop();
@@ -58,7 +63,7 @@
       el.video.srcObject = null;
     }
     setCamState("IDLE");
-    setStatus("Camera stopped");
+    setStatus("鏡頭已停止");
   };
 
   const renderInfer = (data = {}) => {
@@ -92,7 +97,7 @@
     try {
       const blob = await frameToBlob();
       if (!blob) {
-        setStatus("Failed to capture frame", "warn");
+        setStatus("無法擷取影像", "warn");
         return;
       }
       const form = new FormData();
@@ -103,13 +108,19 @@
       });
       const json = await res.json();
       if (!json?.success) {
-        setStatus(json?.message || "Inference failed", "warn");
+        setStatus(json?.message || "推論失敗", "warn");
         return;
       }
       renderInfer(json.data || {});
-      setStatus("Inference success", "ok");
+      setStatus("推論成功", "ok");
     } catch (err) {
-      setStatus(`Inference error: ${String(err)}`, "warn");
+      setStatus(`推論連線失敗：${String(err)}（服務可能喚醒中，3 秒後重試）`, "warn");
+      if (!inferRetryTimer && stream) {
+        inferRetryTimer = window.setTimeout(() => {
+          inferRetryTimer = null;
+          callInfer();
+        }, 3000);
+      }
     } finally {
       inFlight = false;
     }
@@ -117,7 +128,7 @@
 
   const startCamera = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      setStatus("Browser does not support getUserMedia", "warn");
+      setStatus("瀏覽器不支援攝影機 API", "warn");
       return;
     }
     try {
@@ -134,13 +145,13 @@
         await el.video.play();
       }
       setCamState("LIVE");
-      setStatus("Camera started");
+      setStatus("鏡頭啟動成功");
       stopLoop();
       const interval = Math.max(600, Number(cfg.inferIntervalMs || 1200));
       timer = window.setInterval(callInfer, interval);
       callInfer();
     } catch (err) {
-      setStatus(`Camera start failed: ${String(err)}`, "warn");
+      setStatus(`鏡頭啟動失敗：${String(err)}`, "warn");
       setCamState("ERROR");
     }
   };
@@ -154,7 +165,7 @@
         setText(el.providerChip, json.data.provider_selected || "--");
       }
     } catch {
-      setStatus("Failed to load cloud health", "warn");
+      setStatus("無法讀取雲端狀態", "warn");
     }
   };
 

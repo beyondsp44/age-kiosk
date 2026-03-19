@@ -45,6 +45,7 @@ class CloudInferService:
     _lock = threading.Lock()
     _app = None
     _provider = "CPUExecutionProvider"
+    _model_name = "buffalo_s"
 
     @classmethod
     def _select_providers(cls) -> Tuple[List[str], int, str]:
@@ -77,6 +78,7 @@ class CloudInferService:
             "providers_config": providers,
             "ctx_id": ctx_id,
             "available_providers": available,
+            "model_name": cls._model_name,
         }
 
     @classmethod
@@ -85,22 +87,26 @@ class CloudInferService:
             raise RuntimeError("insightface is not installed")
 
         providers, ctx_id, primary = cls._select_providers()
+        model_name = str(os.getenv("AGE_KIOSK_CLOUD_MODEL_NAME", "buffalo_s") or "buffalo_s").strip()
+        if not model_name:
+            model_name = "buffalo_s"
         root = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")), ".insightface")
         os.makedirs(os.path.join(root, "models"), exist_ok=True)
 
         try:
             app = FaceAnalysis(
-                name="buffalo_l",
+                name=model_name,
                 root=root,
                 providers=providers,
                 allowed_modules=["detection", "genderage"],
             )
         except TypeError:
-            app = FaceAnalysis(name="buffalo_l", root=root)
+            app = FaceAnalysis(name=model_name, root=root)
 
         app.prepare(ctx_id=ctx_id, det_size=(256, 256))
         cls._app = app
         cls._provider = primary
+        cls._model_name = model_name
 
     @classmethod
     def _get_app(cls):

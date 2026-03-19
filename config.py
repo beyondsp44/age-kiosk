@@ -52,6 +52,7 @@ class Config:
     CLOUD_MODE = _bool_env("AGE_KIOSK_CLOUD_MODE", False)
     CLOUD_MAX_IMAGE_MB = _int_env("AGE_KIOSK_CLOUD_MAX_IMAGE_MB", 5)
     CLOUD_INFER_INTERVAL_MS = _int_env("AGE_KIOSK_CLOUD_INFER_INTERVAL_MS", 1200)
+    CLOUD_MODEL_NAME = _str_env("AGE_KIOSK_CLOUD_MODEL_NAME", "buffalo_s")
     SUPABASE_URL = _str_env("AGE_KIOSK_SUPABASE_URL", "")
     SUPABASE_API_KEY = _str_env("AGE_KIOSK_SUPABASE_API_KEY", "")
     SUPABASE_TABLE = _str_env("AGE_KIOSK_SUPABASE_TABLE", "detection_logs")

@@ -4,7 +4,7 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
+    startCommand: gunicorn wsgi:app --workers 1 --threads 4 --timeout 600
     envVars:
       - key: PYTHON_VERSION
         value: "3.10.13"
@@ -16,3 +16,5 @@ services:
         value: "5"
       - key: AGE_KIOSK_CLOUD_INFER_INTERVAL_MS
         value: "1200"
+      - key: AGE_KIOSK_CLOUD_MODEL_NAME
+        value: "buffalo_s"

@@ -27,7 +27,7 @@ pip install -r requirements.txt
 
 - Start Command
 ```bash
-gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
+gunicorn wsgi:app --workers 1 --threads 4 --timeout 600
 ```
 
 ## 4) Required environment variables
@@ -35,6 +35,7 @@ gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
 - `AGE_KIOSK_QUIET_HTTP_LOGS=1`
 - `AGE_KIOSK_CLOUD_MAX_IMAGE_MB=5`
 - `AGE_KIOSK_CLOUD_INFER_INTERVAL_MS=1200`
+- `AGE_KIOSK_CLOUD_MODEL_NAME=buffalo_s`
 
 Optional:
 - `AGE_KIOSK_SUPABASE_URL`
