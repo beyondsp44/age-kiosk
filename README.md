@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 ### Start Command
 ```bash
-gunicorn wsgi:app --workers 1 --threads 4 --timeout 600
+gunicorn wsgi:app --workers 1 --threads 2 --timeout 600 --max-requests 50 --max-requests-jitter 10
 ```
 
 ### 必要環境變數
@@ -49,6 +49,10 @@ gunicorn wsgi:app --workers 1 --threads 4 --timeout 600
 - `AGE_KIOSK_CLOUD_MAX_IMAGE_MB=5`
 - `AGE_KIOSK_CLOUD_INFER_INTERVAL_MS=1200`
 - `AGE_KIOSK_CLOUD_MODEL_NAME=buffalo_s`
+- `OMP_NUM_THREADS=1`
+- `OPENBLAS_NUM_THREADS=1`
+- `MKL_NUM_THREADS=1`
+- `NUMEXPR_NUM_THREADS=1`
 
 可直接使用 repo 內的 `render.yaml` 當設定基準，避免手動漏填。
 

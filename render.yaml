@@ -4,10 +4,18 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn wsgi:app --workers 1 --threads 4 --timeout 600
+    startCommand: gunicorn wsgi:app --workers 1 --threads 2 --timeout 600 --max-requests 50 --max-requests-jitter 10
     envVars:
       - key: PYTHON_VERSION
         value: "3.10.13"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: OPENBLAS_NUM_THREADS
+        value: "1"
+      - key: MKL_NUM_THREADS
+        value: "1"
+      - key: NUMEXPR_NUM_THREADS
+        value: "1"
       - key: AGE_KIOSK_CLOUD_MODE
         value: "1"
       - key: AGE_KIOSK_QUIET_HTTP_LOGS
