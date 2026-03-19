@@ -48,6 +48,8 @@ gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
 - `AGE_KIOSK_CLOUD_MAX_IMAGE_MB=5`
 - `AGE_KIOSK_CLOUD_INFER_INTERVAL_MS=1200`
 
+可直接使用 repo 內的 `render.yaml` 當設定基準，避免手動漏填。
+
 可選（有接 Supabase 才設）
 - `AGE_KIOSK_SUPABASE_URL`
 - `AGE_KIOSK_SUPABASE_API_KEY`
@@ -78,3 +80,4 @@ gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
 - 首次推論會初始化 InsightFace，可能較慢。
 - 雲端模式要用 HTTPS 網域，瀏覽器才會穩定允許攝影機權限。
 - 此分支不內建 `.venv`；請在部署端安裝依賴。
+- Deploy 分支使用 `opencv-python-headless`，避免雲端環境缺少 GUI 動態函式庫。

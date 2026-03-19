@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: age-kiosk
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
+    envVars:
+      - key: AGE_KIOSK_CLOUD_MODE
+        value: "1"
+      - key: AGE_KIOSK_QUIET_HTTP_LOGS
+        value: "1"
+      - key: AGE_KIOSK_CLOUD_MAX_IMAGE_MB
+        value: "5"
+      - key: AGE_KIOSK_CLOUD_INFER_INTERVAL_MS
+        value: "1200"
