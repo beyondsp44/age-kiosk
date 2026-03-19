@@ -1,0 +1,56 @@
+﻿{% extends "layout.html" %}
+
+{% block title %}Age Kiosk Cloud Demo{% endblock %}
+
+{% block content %}
+<section class="grid cloud-grid">
+  <article class="panel video-panel">
+    <div class="panel-head">
+      <h2>Cloud Camera</h2>
+      <span id="cam-chip" class="chip chip-soft">IDLE</span>
+    </div>
+
+    <div class="stream-wrap">
+      <video id="cloud-video" playsinline autoplay muted></video>
+    </div>
+
+    <div class="cloud-actions">
+      <button id="btn-start" type="button">Start Camera</button>
+      <button id="btn-stop" type="button" class="btn-secondary">Stop Camera</button>
+      <button id="btn-shot" type="button" class="btn-secondary">Infer Now</button>
+    </div>
+
+    <p id="cloud-status" class="hint">Waiting to start camera</p>
+    <canvas id="cloud-canvas" class="hidden-canvas"></canvas>
+  </article>
+
+  <article class="panel status-panel">
+    <div class="panel-head">
+      <h2>Cloud Inference</h2>
+      <span id="provider-chip" class="chip chip-soft">--</span>
+    </div>
+
+    <dl class="status-list">
+      <div><dt>Face Count</dt><dd id="face-count">--</dd></div>
+      <div><dt>AI Age</dt><dd id="ai-age">--</dd></div>
+      <div><dt>Display Range</dt><dd id="ai-range">--</dd></div>
+      <div><dt>Decision Code</dt><dd id="decision-code">--</dd></div>
+      <div><dt>Decision Label</dt><dd id="decision-label">--</dd></div>
+      <div><dt>Manual Verify</dt><dd id="manual-verify">--</dd></div>
+      <div><dt>Message</dt><dd id="result-msg">--</dd></div>
+    </dl>
+  </article>
+</section>
+
+<script>
+  window.AGE_KIOSK_CLOUD_CONFIG = {
+    healthApi: "{{ cloud_health_api }}",
+    inferApi: "{{ cloud_infer_api }}",
+    inferIntervalMs: {{ infer_interval_ms }}
+  };
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/cloud_demo.js') }}"></script>
+{% endblock %}

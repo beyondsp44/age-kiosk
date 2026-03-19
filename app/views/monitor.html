@@ -1,0 +1,102 @@
+{% extends "layout.html" %}
+
+{% block title %}Age Kiosk Monitor{% endblock %}
+
+{% block content %}
+<section class="monitor-grid">
+  <article class="monitor-card total">
+    <h3>總偵測次數</h3>
+    <p id="m-total" class="monitor-number">0</p>
+  </article>
+  <article class="monitor-card pass">
+    <h3>合法 (PASS)</h3>
+    <p id="m-pass" class="monitor-number">0</p>
+  </article>
+  <article class="monitor-card alarm">
+    <h3>未通過 / 需覆核</h3>
+    <p id="m-alarm" class="monitor-number">0</p>
+  </article>
+</section>
+
+<section class="monitor-panels">
+  <article class="panel monitor-panel">
+    <div class="panel-head">
+      <h2>合法 vs 未通過</h2>
+      <span id="m-pass-rate" class="chip chip-soft">PASS 0%</span>
+    </div>
+    <div class="donut-wrap">
+      <div id="m-donut" class="donut" aria-label="合法與未通過比例"></div>
+      <div class="donut-legend">
+        <div><span class="dot pass"></span>合法 (PASS)</div>
+        <div><span class="dot alarm"></span>未通過 (ALARM)</div>
+      </div>
+    </div>
+  </article>
+
+  <article class="panel monitor-panel">
+    <div class="panel-head">
+      <h2>年齡區間分布</h2>
+      <span class="chip chip-soft">RANGE</span>
+    </div>
+    <div id="m-bars" class="bars-wrap" aria-label="年齡區間柱狀圖"></div>
+  </article>
+</section>
+
+<section class="panel monitor-history-panel">
+  <div class="panel-head">
+    <h2>偵測紀錄</h2>
+    <span id="m-updated" class="chip chip-soft">--</span>
+  </div>
+
+  <div class="monitor-history-tools">
+    <div class="quick-range-group" aria-label="快捷範圍">
+      <button type="button" class="pager-btn quick-range-btn" data-range-preset="today">今日</button>
+      <button type="button" class="pager-btn quick-range-btn" data-range-preset="week">本週</button>
+      <button type="button" class="pager-btn quick-range-btn" data-range-preset="month">本月</button>
+      <button type="button" class="pager-btn quick-range-btn" data-range-preset="year">本年</button>
+      <button type="button" class="pager-btn quick-range-btn active" data-range-preset="all">全部</button>
+    </div>
+    <label class="date-label" for="m-date-start">起日</label>
+    <input id="m-date-start" type="date" class="date-input">
+    <label class="date-label" for="m-date-end">迄日</label>
+    <input id="m-date-end" type="date" class="date-input">
+    <button id="m-date-apply" type="button" class="pager-btn">套用</button>
+    <button id="m-date-clear" type="button" class="pager-btn">清除</button>
+    <button id="m-prev-page" type="button" class="pager-btn">較新</button>
+    <button id="m-next-page" type="button" class="pager-btn">較舊</button>
+    <span id="m-page-info" class="chip chip-soft">1 / 1</span>
+    <a id="m-archive-daily" class="export-btn" href="{{ monitor_daily_archive_api }}?date=">每日封存</a>
+    <a id="m-export-csv" class="export-btn" href="{{ monitor_export_api }}?limit=0">匯出 CSV</a>
+  </div>
+
+  <div class="monitor-table-wrap">
+    <table class="monitor-table">
+      <thead>
+        <tr>
+          <th>時間</th>
+          <th>模式</th>
+          <th>AI估測</th>
+          <th>核驗年齡</th>
+          <th>結果</th>
+        </tr>
+      </thead>
+      <tbody id="m-history-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+  window.AGE_KIOSK_MONITOR_CONFIG = {
+    summaryApi: "{{ monitor_summary_api }}",
+    historyApi: "{{ monitor_history_api }}",
+    exportApi: "{{ monitor_export_api }}",
+    dailyArchiveApi: "{{ monitor_daily_archive_api }}",
+    historyLimit: {{ monitor_history_limit }},
+    pollMs: {{ monitor_poll_ms }}
+  };
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/monitor.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block title %}Age Kiosk Dashboard{% endblock %}
+
+{% block content %}
+<section class="grid">
+  <article class="panel video-panel">
+    <div class="panel-head">
+      <h2>即時影像</h2>
+      <span class="chip">LIVE</span>
+    </div>
+    <div class="stream-wrap">
+      <img id="stream" src="{{ stream_url }}" alt="Live Stream">
+      <div class="scan-overlay" aria-hidden="true">
+        <div class="radar-line"></div>
+      </div>
+    </div>
+
+    <section class="flow-card" aria-label="驗證流程">
+      <div class="flow-head">驗證流程</div>
+      <div class="flow-list">
+        <div class="flow-item">
+          <span class="flow-no">01</span>
+          <span>站入拍照區，進行 AI 估測</span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-no">02</span>
+          <span>需要驗證時，完成證件拍照引導</span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-no">03</span>
+          <span>輸入生日並按 Enter，完成判定</span>
+        </div>
+      </div>
+    </section>
+  </article>
+
+  <article class="panel status-panel">
+    <div class="panel-head">
+      <h2>系統狀態</h2>
+      <span class="chip chip-soft">POLL MODE</span>
+    </div>
+
+    <dl class="status-list">
+      <div><dt>流程階段</dt><dd id="state">--</dd></div>
+      <div><dt>提示訊息</dt><dd id="reason_message">--</dd></div>
+      <div><dt>提示代碼</dt><dd id="reason_code">--</dd></div>
+      <div><dt>AI估測</dt><dd id="ai_age">--</dd></div>
+      <div><dt>核驗年齡</dt><dd id="final_age">--</dd></div>
+      <div><dt>最終判定</dt><dd id="final_status">--</dd></div>
+      <div><dt>驗證訊息</dt><dd id="ocr_msg">--</dd></div>
+    </dl>
+
+    <div class="hint" id="op-hint">
+      手動輸入模式支援鍵盤：數字、Backspace、Enter、C
+    </div>
+
+    <button id="reset-btn" type="button">重置流程</button>
+
+    <section class="history-wrap" aria-label="偵測紀錄">
+      <div class="history-head">
+        <h3>偵測紀錄</h3>
+        <span id="history-count" class="history-count">0 筆</span>
+      </div>
+      <div id="history-list" class="history-list"></div>
+    </section>
+  </article>
+</section>
+
+<script>
+  window.AGE_KIOSK_CONFIG = {
+    statusApi: "{{ status_api }}",
+    historyApi: "{{ history_api }}",
+    historyLimit: {{ history_limit }},
+    resetApi: "{{ reset_api }}",
+    keyApi: "{{ key_api }}",
+    pollMs: {{ status_poll_ms }}
+  };
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/kiosk.js') }}"></script>
+{% endblock %}

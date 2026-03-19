@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+.cache/
+.matplotlib/
+.modelscope/
+.paddlex/
+appdata/
+_backups/
+_pdf_gamma/
+_pdf_notebooklm/
+_pdf_notebooklm_full/
+_pdf_*_overview.png
+_tmp_pdf_extract.txt
+dist/_stage/
+*.db

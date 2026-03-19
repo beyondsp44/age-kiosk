@@ -1,0 +1,10 @@
+schema: spec-driven
+context: |
+  Project: Age Kiosk
+  Runtime: Python 3.10 + Flask + OpenCV + InsightFace
+  Architecture: Flask Web UI + Engine Service + SQLite
+rules:
+  specs:
+    - Use Traditional Chinese for project-facing documents.
+    - Use SHALL for normative requirements.
+    - Use GIVEN/WHEN/THEN/AND scenarios.
