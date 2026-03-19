@@ -1,5 +1,7 @@
 from flask import Flask
 
+from app.services.cloud_infer_service import CloudInferService
+from app.services.cloud_log_service import CloudLogService
 from app.services.engine_service import EngineService
 
 
@@ -9,6 +11,14 @@ def create_app(config_class: str = "config.Config") -> Flask:
 
     if app.config.get("CLOUD_MODE", False):
         EngineService.shutdown()
+        CloudLogService.configure(
+            db_path="age_kiosk.log.db",
+            supabase_url=app.config.get("SUPABASE_URL", ""),
+            supabase_api_key=app.config.get("SUPABASE_API_KEY", ""),
+            supabase_table=app.config.get("SUPABASE_TABLE", "detection_logs"),
+            supabase_timeout_sec=app.config.get("SUPABASE_TIMEOUT_SEC", 2.0),
+        )
+        CloudInferService.start_warmup_async()
     else:
         EngineService.configure(
             cam_face=app.config.get("CAM_INDEX", 0),

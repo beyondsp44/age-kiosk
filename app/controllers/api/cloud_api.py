@@ -1,6 +1,7 @@
 from flask import Blueprint, current_app, jsonify, request
 
 from app.services.cloud_infer_service import CloudInferService
+from app.services.cloud_log_service import CloudLogService
 
 api_cloud_bp = Blueprint("api_cloud", __name__, url_prefix="/api/v1/cloud")
 
@@ -44,6 +45,7 @@ def _max_image_bytes() -> int:
 @api_cloud_bp.get("/health")
 def health():
     try:
+        CloudInferService.start_warmup_async()
         return _ok(CloudInferService.runtime_info())
     except Exception as exc:
         return _error(f"cloud health failed: {exc}")
@@ -61,6 +63,7 @@ def infer():
             if len(image_bytes) > max_bytes:
                 return _error("image too large", code=413)
             result = CloudInferService.infer_from_bytes(image_bytes)
+            CloudLogService.log_infer_result(result, mode="CLOUD")
             return _ok(result)
 
         payload = request.get_json(silent=True) or {}
@@ -68,8 +71,16 @@ def infer():
         if not image_base64:
             return _error("missing image file or image_base64", code=400)
         result = CloudInferService.infer_from_base64(image_base64)
+        CloudLogService.log_infer_result(result, mode="CLOUD")
         return _ok(result)
     except ValueError as exc:
         return _error(str(exc), code=400)
+    except RuntimeError as exc:
+        msg = str(exc)
+        if "MODEL_WARMING" in msg:
+            return _error("模型預熱中，請稍候 5-20 秒後重試", code=503)
+        if "MODEL_INIT_FAILED" in msg:
+            return _error(f"模型初始化失敗: {msg}", code=500)
+        return _error(msg, code=500)
     except Exception as exc:
         return _error(f"cloud infer failed: {exc}")

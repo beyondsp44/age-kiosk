@@ -1,4 +1,5 @@
-from flask import Blueprint, current_app, redirect, render_template, url_for
+from flask import Blueprint, current_app, render_template, url_for
+from app.services.cloud_infer_service import CloudInferService
 from app.services.engine_service import EngineService
 
 main_bp = Blueprint("main", __name__)
@@ -8,6 +9,7 @@ main_bp = Blueprint("main", __name__)
 @main_bp.route("/dashboard")
 def dashboard():
     if current_app.config.get("CLOUD_MODE", False):
+        CloudInferService.start_warmup_async()
         return render_template(
             "cloud_demo.html",
             title="AI Age Kiosk Cloud Demo",
@@ -37,9 +39,6 @@ def dashboard():
 
 @main_bp.route("/monitor")
 def monitor():
-    if current_app.config.get("CLOUD_MODE", False):
-        return redirect(url_for("main.dashboard"))
-
     # Dashboard page is for stats only; release camera engine to avoid unnecessary runtime load.
     EngineService.shutdown()
     return render_template(

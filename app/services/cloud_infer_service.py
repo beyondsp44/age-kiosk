@@ -1,6 +1,7 @@
 import base64
 import os
 import threading
+import time
 from typing import Any, Dict, List, Optional, Tuple
 
 import cv2
@@ -46,6 +47,9 @@ class CloudInferService:
     _app = None
     _provider = "CPUExecutionProvider"
     _model_name = "buffalo_s"
+    _warming = False
+    _warmup_thread = None
+    _init_error = ""
 
     @classmethod
     def _select_providers(cls) -> Tuple[List[str], int, str]:
@@ -74,12 +78,37 @@ class CloudInferService:
         providers, ctx_id, primary = cls._select_providers()
         return {
             "initialized": cls._app is not None,
+            "warming": bool(cls._warming and cls._app is None),
+            "init_error": cls._init_error or None,
             "provider_selected": cls._provider if cls._app is not None else primary,
             "providers_config": providers,
             "ctx_id": ctx_id,
             "available_providers": available,
             "model_name": cls._model_name,
         }
+
+    @classmethod
+    def _warmup_runner(cls):
+        try:
+            cls._init_app()
+        except Exception as exc:
+            with cls._lock:
+                cls._init_error = str(exc)
+        finally:
+            with cls._lock:
+                cls._warming = False
+
+    @classmethod
+    def start_warmup_async(cls):
+        with cls._lock:
+            if cls._app is not None:
+                return
+            if cls._warming:
+                return
+            cls._warming = True
+            cls._init_error = ""
+            cls._warmup_thread = threading.Thread(target=cls._warmup_runner, daemon=True)
+            cls._warmup_thread.start()
 
     @classmethod
     def _init_app(cls):
@@ -104,16 +133,34 @@ class CloudInferService:
             app = FaceAnalysis(name=model_name, root=root)
 
         app.prepare(ctx_id=ctx_id, det_size=(256, 256))
-        cls._app = app
-        cls._provider = primary
-        cls._model_name = model_name
+        with cls._lock:
+            cls._app = app
+            cls._provider = primary
+            cls._model_name = model_name
+            cls._init_error = ""
 
     @classmethod
-    def _get_app(cls):
-        with cls._lock:
-            if cls._app is None:
-                cls._init_app()
-            return cls._app
+    def _get_app(cls, wait: bool = False, timeout_sec: float = 0.0):
+        start = time.time()
+        while True:
+            with cls._lock:
+                if cls._app is not None:
+                    return cls._app
+                init_error = cls._init_error
+                warming = cls._warming
+
+            if init_error:
+                raise RuntimeError(f"MODEL_INIT_FAILED: {init_error}")
+
+            if not warming:
+                cls.start_warmup_async()
+
+            if not wait:
+                raise RuntimeError("MODEL_WARMING")
+
+            if timeout_sec > 0 and (time.time() - start) >= timeout_sec:
+                raise RuntimeError("MODEL_WARMING_TIMEOUT")
+            time.sleep(0.08)
 
     @staticmethod
     def _decode_image(image_bytes: bytes):
@@ -168,7 +215,7 @@ class CloudInferService:
     @classmethod
     def infer_from_bytes(cls, image_bytes: bytes) -> Dict[str, Any]:
         frame = cls._decode_image(image_bytes)
-        app = cls._get_app()
+        app = cls._get_app(wait=False)
 
         faces = app.get(frame) or []
         face_count = len(faces)

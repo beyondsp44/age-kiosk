@@ -79,8 +79,12 @@
 
   const frameToBlob = async () => {
     if (!el.video || !el.canvas) return null;
-    const w = el.video.videoWidth || 640;
-    const h = el.video.videoHeight || 480;
+    const srcW = el.video.videoWidth || 640;
+    const srcH = el.video.videoHeight || 480;
+    const maxSide = 640;
+    const scale = Math.min(1, maxSide / Math.max(srcW, srcH));
+    const w = Math.max(160, Math.round(srcW * scale));
+    const h = Math.max(120, Math.round(srcH * scale));
     el.canvas.width = w;
     el.canvas.height = h;
     const ctx = el.canvas.getContext("2d");
@@ -106,9 +110,20 @@
         method: "POST",
         body: form,
       });
-      const json = await res.json();
-      if (!json?.success) {
-        setStatus(json?.message || "推論失敗", "warn");
+      const raw = await res.text();
+      let json = null;
+      try {
+        json = raw ? JSON.parse(raw) : null;
+      } catch {
+        json = null;
+      }
+      if (!res.ok || !json?.success) {
+        const msg = json?.message || `HTTP ${res.status}`;
+        if (res.status === 503) {
+          setStatus(`模型預熱中，請稍候重試（${msg}）`, "warn");
+        } else {
+          setStatus(`推論失敗：${msg}`, "warn");
+        }
         return;
       }
       renderInfer(json.data || {});
@@ -163,6 +178,9 @@
       const json = await res.json();
       if (json?.success && json?.data) {
         setText(el.providerChip, json.data.provider_selected || "--");
+        if (json.data.warming) {
+          setStatus("模型預熱中，首次推論可能較慢", "warn");
+        }
       }
     } catch {
       setStatus("無法讀取雲端狀態", "warn");
