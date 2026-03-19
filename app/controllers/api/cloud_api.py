@@ -45,7 +45,6 @@ def _max_image_bytes() -> int:
 @api_cloud_bp.get("/health")
 def health():
     try:
-        CloudInferService.start_warmup_async()
         return _ok(CloudInferService.runtime_info())
     except Exception as exc:
         return _error(f"cloud health failed: {exc}")
@@ -77,8 +76,6 @@ def infer():
         return _error(str(exc), code=400)
     except RuntimeError as exc:
         msg = str(exc)
-        if "MODEL_WARMING" in msg:
-            return _error("模型預熱中，請稍候 5-20 秒後重試", code=503)
         if "MODEL_INIT_FAILED" in msg:
             return _error(f"模型初始化失敗: {msg}", code=500)
         return _error(msg, code=500)

@@ -1,5 +1,4 @@
 from flask import Blueprint, current_app, render_template, url_for
-from app.services.cloud_infer_service import CloudInferService
 from app.services.engine_service import EngineService
 
 main_bp = Blueprint("main", __name__)
@@ -9,7 +8,6 @@ main_bp = Blueprint("main", __name__)
 @main_bp.route("/dashboard")
 def dashboard():
     if current_app.config.get("CLOUD_MODE", False):
-        CloudInferService.start_warmup_async()
         return render_template(
             "cloud_demo.html",
             title="AI Age Kiosk Cloud Demo",
